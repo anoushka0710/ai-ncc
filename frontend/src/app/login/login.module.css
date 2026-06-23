@@ -1,0 +1,178 @@
+/* Login page — scoped styles */
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-background-tertiary);
+  padding: 24px 16px;
+}
+
+.card {
+  background: var(--color-background-primary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--radius-lg);
+  padding: 32px 28px;
+  width: 100%;
+  max-width: 340px;
+  box-shadow: var(--shadow-md);
+}
+
+/* ── Logo ────────────────────────────────────────────────────────────────── */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.logoIcon {
+  width: 40px;
+  height: 40px;
+  background: var(--color-brand-light);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-brand);
+  flex-shrink: 0;
+}
+
+.logoTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  letter-spacing: -0.2px;
+}
+
+.logoSub {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  margin-top: 1px;
+}
+
+/* ── Role pills ──────────────────────────────────────────────────────────── */
+.section {
+  margin-bottom: 16px;
+}
+
+.sectionLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: 6px;
+}
+
+.rolePills {
+  display: flex;
+  gap: 8px;
+}
+
+.rolePill {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 0;
+  border-radius: var(--radius-md);
+  border: 0.5px solid var(--color-border-tertiary);
+  font-size: 12px;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  background: var(--color-background-primary);
+  transition: all 0.15s;
+}
+
+.rolePill:hover {
+  background: var(--color-background-secondary);
+  color: var(--color-text-primary);
+}
+
+/* Active writer pill */
+.pill_writer {
+  background: var(--color-brand-light) !important;
+  color: var(--color-brand-dark) !important;
+  border-color: #85B7EB !important;
+  font-weight: 500;
+}
+
+/* Active reader pill */
+.pill_reader {
+  background: var(--color-closed-bg) !important;
+  color: var(--color-closed-text) !important;
+  border-color: #97C459 !important;
+  font-weight: 500;
+}
+
+/* ── Fields ──────────────────────────────────────────────────────────────── */
+.field {
+  margin-bottom: 14px;
+}
+
+.passwordWrap {
+  position: relative;
+}
+
+.eyeBtn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  transition: color 0.15s;
+}
+
+.eyeBtn:hover { color: var(--color-text-secondary); }
+
+/* ── Error ───────────────────────────────────────────────────────────────── */
+.errorBox {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 12px;
+  background: #FFF5F5;
+  border: 0.5px solid #FFBDBD;
+  border-radius: var(--radius-md);
+  color: var(--color-text-danger);
+  font-size: 12px;
+  margin-bottom: 14px;
+}
+
+/* ── Login button ────────────────────────────────────────────────────────── */
+.loginBtn {
+  margin-top: 4px;
+  height: 38px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ── Hint ────────────────────────────────────────────────────────────────── */
+.hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 0.5px solid var(--color-border-tertiary);
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  flex-wrap: wrap;
+}
+
+.hint code {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--color-text-secondary);
+}
+
+.hintDot { color: var(--color-border-secondary); }
