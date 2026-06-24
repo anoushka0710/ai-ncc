@@ -12,8 +12,9 @@ interface NavbarProps {
 
 const NAV_LINKS = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/ncc/new',   label: 'Add NCC',   icon: Plus, writerOnly: true },
+  { href: '/ncc',   label: 'Add NCC',   icon: Plus, writerOnly: true },
   { href: '/chat',      label: 'AI Chat',   icon: Bot },
+  
 ]
 
 export default function Navbar({ user }: NavbarProps) {
@@ -24,6 +25,11 @@ export default function Navbar({ user }: NavbarProps) {
     authStore.clearSession()
     router.push('/login')
   }
+
+  // Generate initials from username e.g. "writer_user" → "WU"
+  const initials = user
+    ? user.username.split('_').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+    : '?'
 
   return (
     <nav className={styles.navbar}>
@@ -56,9 +62,9 @@ export default function Navbar({ user }: NavbarProps) {
             </span>
             <div className={styles.userChip}>
               <div className={styles.avatar} data-role={user.role}>
-                {user.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                {initials}
               </div>
-              <span className={styles.userName}>{user.full_name}</span>
+              <span className={styles.userName}>{user.username}</span>
             </div>
           </>
         )}

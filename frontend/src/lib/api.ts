@@ -1,124 +1,116 @@
-import axios from 'axios'
-import Cookies from 'js-cookie'
+import {
+  LoginResponse, User,
+  NccRecord, NccCreateRequest, NccListResponse,
+  FilterOption,
+  AISuggestRequest, AISuggestResponse,
+  AIChatRequest, AIChatResponse,
+} from '@/types'
+import { authStore } from './auth'
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
 
-// ── Axios instance ────────────────────────────────────────────────────────────
-// All calls go to /api/... which Next.js rewrites to http://localhost:8000/...
+// ── Core fetch wrapper ────────────────────────────────────────────────────────
 
-const api = axios.create({
-  baseURL: '/api',
-  headers: { 'Content-Type': 'application/json' },
-})
+async function request<T>(
+  path: string,
+  options: RequestInit = {},
+  isForm = false,
+): Promise<T> {
+  const token = authStore.getToken()
 
-// Attach JWT token automatically on every request
-api.interceptors.request.use((config) => {
-  const token = Cookies.get('access_token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+  const headers: Record<string, string> = {
+    ...(isForm ? {} : { 'Content-Type': 'application/json' }),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(options.headers as Record<string, string> ?? {}),
   }
-  return config
-})
 
-// On 401, clear token and redirect to login
-api.interceptors.response.use(
-  (res) => res,
-  (err) => {
-    if (err.response?.status === 401) {
-      Cookies.remove('access_token')
-      Cookies.remove('user')
-      // Use window.location to avoid Next.js router import issues in lib
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login'
-      }
-    }
-    return Promise.reject(err)
+  const res = await fetch(`${BASE_URL}${path}`, { ...options, headers })
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }))
+    throw { status: res.status, message: err.detail ?? 'Request failed' }
   }
-)
 
-export default api
+  // 204 No Content
+  if (res.status === 204) return undefined as T
+
+  return res.json()
+}
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
 export const authApi = {
-  login: async (username: string, password: string) => {
-    // FastAPI expects form data for OAuth2 token endpoint
-    const form = new URLSearchParams()
-    form.append('username', username)
-    form.append('password', password)
-    const res = await axios.post('/api/auth/login', form, {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    })
-    return res.data as { access_token: string; token_type: string }
+  // Login uses form-encoded body (OAuth2PasswordRequestForm)
+  async login(username: string, password: string): Promise<LoginResponse> {
+    const body = new URLSearchParams({ username, password })
+    return request<LoginResponse>('/auth/login', { method: 'POST', body }, true)
   },
 
-  me: async () => {
-    const res = await api.get('/auth/me')
-    return res.data
+  async me(): Promise<User> {
+    return request<User>('/auth/me')
   },
 }
 
 // ── NCC Records ───────────────────────────────────────────────────────────────
 
 export const nccApi = {
-  list: async (params?: {
-    region?: string
-    product_group?: string
-    location?: string
-    service_portfolio?: string
-    cs_segment?: string
-    quarter_year?: string
-    status?: string
-    page?: number
-    page_size?: number
-  }) => {
-    const res = await api.get('/ncc', { params })
-    return res.data
+  async list(params: Record<string, string | number | undefined> = {}): Promise<NccListResponse> {
+    const qs = new URLSearchParams()
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== '' && v !== 'all') qs.set(k, String(v))
+    })
+    return request<NccListResponse>(`/ncc?${qs}`)
   },
 
-  get: async (id: number) => {
-    const res = await api.get(`/ncc/${id}`)
-    return res.data
+  async get(id: number): Promise<NccRecord> {
+    return request<NccRecord>(`/ncc/${id}`)
   },
 
-  create: async (data: unknown) => {
-    const res = await api.post('/ncc', data)
-    return res.data
+  async create(data: NccCreateRequest): Promise<NccRecord> {
+    return request<NccRecord>('/ncc', { method: 'POST', body: JSON.stringify(data) })
   },
 
-  update: async (id: number, data: unknown) => {
-    const res = await api.put(`/ncc/${id}`, data)
-    return res.data
+  async update(id: number, data: Partial<NccCreateRequest>): Promise<NccRecord> {
+    return request<NccRecord>(`/ncc/${id}`, { method: 'PUT', body: JSON.stringify(data) })
   },
 
-  delete: async (id: number) => {
-    const res = await api.delete(`/ncc/${id}`)
-    return res.data
+  async remove(id: number): Promise<void> {
+    return request<void>(`/ncc/${id}`, { method: 'DELETE' })
   },
 
-  exportCsv: () => {
-    const token = Cookies.get('access_token')
-    window.open(`/api/ncc/export/csv?token=${token}`, '_blank')
+  exportCsvUrl(params: Record<string, string> = {}): string {
+    const qs = new URLSearchParams(params)
+    const token = authStore.getToken()
+    if (token) qs.set('token', token)
+    return `${BASE_URL}/ncc/export/csv?${qs}`
   },
 }
 
 // ── Filters ───────────────────────────────────────────────────────────────────
 
 export const filtersApi = {
-  getAll: async (filter_type?: string) => {
-    const res = await api.get('/filters', { params: { filter_type } })
-    return res.data
+  async getAll(): Promise<FilterOption[]> {
+    return request<FilterOption[]>('/filters')
+  },
+
+  async getByType(filter_type: string): Promise<FilterOption[]> {
+    return request<FilterOption[]>(`/filters?filter_type=${filter_type}`)
   },
 }
 
 // ── AI ────────────────────────────────────────────────────────────────────────
 
 export const aiApi = {
-  suggest: async (data: { description: string; product_group?: string; region?: string }) => {
-    const res = await api.post('/ai/suggest', data)
-    return res.data
+  async suggest(data: AISuggestRequest): Promise<AISuggestResponse> {
+    return request<AISuggestResponse>('/ai/suggest', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
   },
 
-  chat: async (question: string) => {
-    const res = await api.post('/ai/chat', { question })
-    return res.data
+  async chat(data: AIChatRequest): Promise<AIChatResponse> {
+    return request<AIChatResponse>('/ai/chat', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
   },
 }

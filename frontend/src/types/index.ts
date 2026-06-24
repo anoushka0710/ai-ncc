@@ -7,14 +7,16 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   access_token: string
-  token_type: string
+  token_type:   string
+  role:         string
+  username:     string
 }
 
 export interface User {
-  id: number
-  username: string
-  role: 'writer' | 'reader'
-  full_name: string
+  id:         number
+  username:   string
+  role:       'writer' | 'reader'
+  created_at: string
 }
 
 // ── NCC Record ────────────────────────────────────────────────────────────────
@@ -22,69 +24,69 @@ export interface User {
 export type NccStatus = 'open' | 'closed' | 'progress'
 
 export interface NccRecord {
-  id: number
-  so_number: string
-  customer_name: string
-  amount: number
-  quarter_year: string
-  region: string
-  location: string
-  product_group: string
+  id:                number
+  so_number:         string
+  customer_name:     string
+  amount:            number
+  quarter_year:      string
+  region:            string
+  location:          string
+  product_group:     string
   service_portfolio: string
-  cs_segment: string
-  description: string
-  root_cause?: string
+  cs_segment:        string
+  description:       string
+  root_cause?:       string
   corrective_action?: string
   preventive_action?: string
-  status: NccStatus
-  created_by: number
-  created_at: string
-  updated_at: string
+  status:            NccStatus
+  created_by:        number
+  created_at:        string
+  updated_at?:       string
 }
 
 export interface NccCreateRequest {
-  so_number: string
-  customer_name: string
-  amount: number
-  quarter_year: string
-  region: string
-  location: string
-  product_group: string
+  so_number:         string
+  customer_name:     string
+  amount:            number
+  quarter_year:      string
+  region:            string
+  location:          string
+  product_group:     string
   service_portfolio: string
-  cs_segment: string
-  description: string
-  root_cause?: string
+  cs_segment:        string
+  description:       string
+  root_cause?:       string
   corrective_action?: string
   preventive_action?: string
-  status?: NccStatus
+  status?:           NccStatus
 }
 
 export interface NccListResponse {
   records: NccRecord[]
-  total: number
-  page: number
-  page_size: number
+  total:   number
+  page:    number
+  limit:   number   // backend returns "limit" not "page_size"
 }
 
-// ── Filters ────────────────────────────────────────────────────────────────────
+// ── Filters ───────────────────────────────────────────────────────────────────
 
 export interface FilterOption {
-  id: number
-  filter_type: string
-  value: string
+  id:            number
+  filter_type:   string
+  value:         string
   display_label: string
 }
 
-// ── AI ─────────────────────────────────────────────────────────────────────────
+// ── AI ────────────────────────────────────────────────────────────────────────
 
 export interface AISuggestRequest {
-  description: string
+  description:   string
   product_group?: string
-  region?: string
+  region?:       string
 }
 
 export interface AISuggestResponse {
-  root_cause: string
+  root_cause:        string
   corrective_action: string
   preventive_action: string
 }

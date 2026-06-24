@@ -8,9 +8,10 @@ import styles from './login.module.css'
 
 type Role = 'writer' | 'reader'
 
+// ✅ Fixed: matches backend seed_users.py credentials
 const ROLE_CREDENTIALS: Record<Role, { username: string; password: string; label: string }> = {
-  writer: { username: 'admin',  password: 'admin123', label: 'Writer' },
-  reader: { username: 'viewer', password: 'view123',  label: 'Reader' },
+  writer: { username: 'admin',  password: 'admin123',  label: 'Writer' },
+  reader: { username: 'viewer', password: 'view123',   label: 'Reader' },
 }
 
 export default function LoginPage() {
@@ -23,12 +24,10 @@ export default function LoginPage() {
   const [loading,  setLoading]  = useState(false)
   const [error,    setError]    = useState('')
 
-  // If already logged in, skip straight to dashboard
   useEffect(() => {
     if (authStore.isLoggedIn()) router.replace('/dashboard')
   }, [router])
 
-  // When role pill changes, autofill credentials
   function handleRoleChange(r: Role) {
     setRole(r)
     setUsername(ROLE_CREDENTIALS[r].username)
@@ -46,24 +45,23 @@ export default function LoginPage() {
     setError('')
 
     try {
-      // 1. Get JWT token
+      // 1. Get JWT token (form-encoded for OAuth2PasswordRequestForm)
       const { access_token } = await authApi.login(username.trim(), password.trim())
 
-      // 2. Fetch user profile
-      // We need the token for /auth/me so set it temporarily
-      document.cookie = `access_token=${access_token}; path=/; max-age=86400`
+      // 2. Store token temporarily so /auth/me can use it
+      localStorage.setItem('ncc_token', access_token)
+
+      // 3. Fetch user profile
       const user = await authApi.me()
 
-      // 3. Persist session
+      // 4. Persist full session
       authStore.setSession(access_token, user)
 
-      // 4. Navigate to dashboard
+      // 5. Navigate to dashboard
       router.push('/dashboard')
     } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
-        ?? 'Incorrect username or password. Please try again.'
-      setError(msg)
+      const e = err as { message?: string; status?: number }
+      setError(e?.message ?? 'Incorrect username or password. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -148,7 +146,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Error message */}
+          {/* Error */}
           {error && (
             <div className={styles.errorBox} role="alert">
               <AlertCircle size={14} strokeWidth={2} />

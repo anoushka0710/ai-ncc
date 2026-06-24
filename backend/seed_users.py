@@ -3,8 +3,8 @@ Run this ONCE to seed the database with test users.
 Usage: python seed_users.py
 
 Creates:
-  - writer_user  / password123  (role: writer)
-  - reader_user  / password123  (role: reader)
+  - admin  / admin123  (role: writer)
+  - viewer / view123  (role: reader)
 """
 
 import sys
@@ -21,8 +21,8 @@ Base.metadata.create_all(bind=engine)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 SEED_USERS = [
-    {"username": "writer_user", "password": "password123", "role": "writer"},
-    {"username": "reader_user", "password": "password123", "role": "reader"},
+    {"username": "admin",  "password": "admin123", "role": "writer"},
+    {"username": "viewer", "password": "view123",  "role": "reader"},
 ]
 
 
